@@ -1,0 +1,39 @@
+cd {
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.1",
+    "parameters": {
+        "rgName": {
+            "type": "string"
+        },
+        "rgLocation": {
+            
+            "type": "array",
+            "defaultValue": [
+                "East US",
+                "UK West",
+                "West Europe"
+
+            ]
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": {}
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2018-05-01",
+            "location": "[parameters('rgLocation')[copyIndex()]]",
+            "name": "[concat(parameters('rgName'),copyIndex())]",
+            "properties": {},
+            "tags": "[parameters('tags')]",
+            "copy": { 
+                "name": "resGroupCopy", 
+                "count": "[length(parameters('org'))]" 
+              }
+        }
+    ],
+    "outputs": {}
+}
