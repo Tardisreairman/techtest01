@@ -1,9 +1,21 @@
-cd {
+{
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.1",
     "parameters": {
-        "rgName": {
-            "type": "string"
+        "baseName": {
+            "type": "string",
+            "defaultValue" : "AlanGunnTechTest",
+            "metadata": {
+              "description": "Base name of the resource such as web app name and app service plan"
+            },
+            "minLength": 2
+          },
+          "sku": {
+            "type": "string",
+            "defaultValue" : "S1",
+            "metadata": {
+              "description": "The SKU of App Service Plan, by default is Standard S1"
+            }
         },
         "rgLocation": {
             
@@ -14,10 +26,6 @@ cd {
                 "West Europe"
 
             ]
-        },
-        "tags": {
-            "type": "object",
-            "defaultValue": {}
         }
     },
     "variables": {},
@@ -26,14 +34,15 @@ cd {
             "type": "Microsoft.Resources/resourceGroups",
             "apiVersion": "2018-05-01",
             "location": "[parameters('rgLocation')[copyIndex()]]",
-            "name": "[concat(parameters('rgName'),copyIndex())]",
+            "name": "[concat(parameters('baseName'),'-res-group-',copyIndex())]",
             "properties": {},
-            "tags": "[parameters('tags')]",
             "copy": { 
                 "name": "resGroupCopy", 
-                "count": "[length(parameters('org'))]" 
+                "count": "[length(parameters('rgLocation'))]" 
               }
         }
-    ],
-    "outputs": {}
+            
+            
+
+    ]
 }
