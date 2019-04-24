@@ -19,6 +19,13 @@
                 "West Europe"
 
             ]
+        },
+        "sku":{
+          "type": "string",
+          "defaultValue" : "S1",
+          "metadata": {
+            "description": "The SKU of App Service Plan, by default is Standard S1"
+          }
         }
     },
     "variables": {},
@@ -60,7 +67,32 @@
                             "sku": {
                                 "name": "Standard_LRS"
                             }
-                        }
+                        },
+                        {
+                            "apiVersion": "2017-08-01",
+                            "type": "Microsoft.Web/serverfarms",
+                            "kind": "app",
+                            "name": "[concat(parameters('baseName'),'-app-serv-plan-',copyIndex())]",
+                            "location": "[parameters('rgLocation')[copyIndex()]]",
+                            "properties": {},
+                            "dependsOn": [],
+                            "sku": {
+                              "name": "[parameters('sku')]"
+                            }
+                          },
+                          {
+                            "apiVersion": "2016-08-01",
+                            "type": "Microsoft.Web/sites",
+                            "kind": "app",
+                            "name": "[concat(parameters('baseName'),'-app-',copyIndex())]",
+                            "location": "[parameters('rgLocation')[copyIndex()]]",
+                            "properties": {
+                              "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('baseName'),'app-serv-plan-',copyIndex()))]"
+                            },
+                            "dependsOn": [
+                              "[resourceId('Microsoft.Web/serverfarms', concat(parameters('baseName'),'app-serv-plan-',copyIndex()))]"
+                            ]
+                          }
                     ],
                     "outputs": {}
                 }
