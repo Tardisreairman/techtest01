@@ -1,0 +1,69 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualNetName": {
+      "type": "string",
+    },
+    "subnetName": {
+      "type": "string",
+    }
+  },
+  "variables": {
+    "NSGName": parameters('subnetName')
+    "ResourceGroupName": "[resourceGroup().name]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-11-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('NSGName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "Allow-Inbound-RDP",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "192.168.0.1/24",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 4050,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2017-08-01",
+      "name": "apply-nsg-to-subnet",
+      "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('NSGName'))]"
+      ],
+      "properties": {
+        "mode" : "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "apiVersion" : "2018-03-01",
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "name": "[concat(parameters('virtualNetName'), '/', parameters('subnetName'))]",
+              "properties": {
+                "addressPrefix": "[reference(resourceId(variables('ResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetName'), parameters('subnetName')), '2018-03-01').addressPrefix]",
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('NSGName'))]"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
